@@ -6,21 +6,19 @@
  * Licensed under the Apache License, Version 2.0
  *
  * Project:
- *     叮咚鸡 (Dondji)
+ *      叮咚鸡 (Dondji)
  *
  * Maintainer:
- *     BD1AHN
+ *      BD1AHN
  *
  * Official Website:
- *     https://ethanyan6.github.io/Dondji/
+ *      https://ethanyan6.github.io/Dondji/
  *
  * The Dondji name, logo, and official project identity
  * are protected separately from the source code license.
  */
 
-
 #include "app/toolbox_menu.h"
-#include "app/mokuyu.h"
 #include "app/cw.h"
 #include "keyboard_state.h"
 #include "../driver/bk4819.h"
@@ -36,7 +34,6 @@
 #endif
 
 static bool isInitialized;
-static uint8_t selectedIndex;
 static KeyboardState kbd;
 
 static void DrawMenu(void)
@@ -58,25 +55,17 @@ static void DrawMenu(void)
         UI_DrawPixelBuffer(gFrameBuffer, (uint8_t)x, 13, true);
     }
 
-    // Menu items - shifted down 3 pixels from row positions
-    const char *items[] = {
-        (gUiLanguage == UI_LANGUAGE_CN) ? "电子木鱼" : "Mokuyu",
-        "cw"
-    };
-    const uint8_t row_start[] = {3, 5};
-
-    for (int i = 0; i < 2; i++) {
-        uint8_t row = row_start[i];
-        UI_PrintStringSmallAtPixel(items[i], 0, 127, row * 8 + 3, row * 8 + 14, 0);
-        if (i == selectedIndex) {
-            // Invert all framebuffer lines the text spans: black background + white text
-            uint8_t fb_start = (row * 8 >= 8) ? (row * 8 - 8) / 8 : 0;
-            uint8_t fb_end = (row * 8 + 11 - 8) / 8;
-            for (uint8_t r = fb_start; r <= fb_end; r++) {
-                for (int x = 0; x < LCD_WIDTH; x++) {
-                    gFrameBuffer[r][x] ^= 0xFF;
-                }
-            }
+    // Menu item (Only CW left)
+    const char *item = "cw";
+    uint8_t row = 3;
+    UI_PrintStringSmallAtPixel(item, 0, 127, row * 8 + 3, row * 8 + 14, 0);
+    
+    // Invert selection background
+    uint8_t fb_start = (row * 8 >= 8) ? (row * 8 - 8) / 8 : 0;
+    uint8_t fb_end = (row * 8 + 11 - 8) / 8;
+    for (uint8_t r = fb_start; r <= fb_end; r++) {
+        for (int x = 0; x < LCD_WIDTH; x++) {
+            gFrameBuffer[r][x] ^= 0xFF;
         }
     }
 }
@@ -105,23 +94,9 @@ static bool HandleInput(void)
 
     if (kbd.current != kbd.prev) {
         switch (kbd.current) {
-        case KEY_UP:
-            // Move up
-            if (selectedIndex > 0)
-                selectedIndex--;
-            break;
-        case KEY_DOWN:
-            // Move down
-            if (selectedIndex < 1)
-                selectedIndex++;
-            break;
         case KEY_MENU:
-            // Enter selected item
-            if (selectedIndex == 0) {
-                APP_RunMokuyu();
-            } else if (selectedIndex == 1) {
-                APP_RunCW();
-            }
+            // Enter CW
+            APP_RunCW();
             break;
         default:
             break;
@@ -135,7 +110,6 @@ void APP_RunToolboxMenu(void)
 {
     BACKLIGHT_UpdateTickless();
 
-    selectedIndex = 0;
     isInitialized = true;
     kbd.current = KEY_INVALID;
     kbd.prev = KEY_INVALID;
