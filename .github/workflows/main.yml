@@ -13,11 +13,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Python/Docker & Compile directly
+    - name: Compile firmware
       run: |
-        docker build -t uvk1-env .
-        docker run --rm -v ${{ github.workspace }}:/src uvk1-env python3 -m pip install --upgrade pip || true
-        docker run --rm -v ${{ github.workspace }}:/src uvk1-env make
+        chmod +x compile-with-docker.sh
+        ./compile-with-docker.sh
 
     - name: Upload firmware artifact
       uses: actions/upload-artifact@v4
